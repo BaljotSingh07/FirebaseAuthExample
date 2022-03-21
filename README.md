@@ -1,5 +1,6 @@
 # FirebaseAuthExample
 Template for firebase authentication, includes sign in, sign up, email verification, and password reset. 
+This template uses material ui to provide a default authentication ui, refer to customizing section to use a differnt react component library to.
 
 ## Getting Started
 ### Setting up firebase 
