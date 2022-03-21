@@ -1,6 +1,7 @@
 import LoginForm from "../src/components/login"
 import SignUpFrom from "../src/components/signup"
 import Home from "../src/components/home"
+import ForgotPassword from "./components/forgotpass";
 import { firebaseAuth } from "./firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import { useEffect, useState } from "react";
@@ -22,6 +23,8 @@ function App() {
         return <SignUpFrom handler={authHanlder}/>
       case "home":
         return <Home/>
+      case "forgotpassword":
+        return <ForgotPassword handler={authHanlder}/>
       default:
         return  <LoginForm handler={authHanlder}/>
     }

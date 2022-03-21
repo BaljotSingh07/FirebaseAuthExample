@@ -1,19 +1,10 @@
 import * as React from 'react';
-import Avatar from '@mui/material/Avatar';
-import Button from '@mui/material/Button';
-import CssBaseline from '@mui/material/CssBaseline';
-import TextField from '@mui/material/TextField';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Checkbox from '@mui/material/Checkbox';
-import Link from '@mui/material/Link';
-import Grid from '@mui/material/Grid';
-import Box from '@mui/material/Box';
+import { useState } from 'react';
+import { Avatar, Button, CssBaseline, TextField, Link, Grid, Box, Typography, Container, Backdrop, CircularProgress, Alert } from '@mui/material';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
-import Typography from '@mui/material/Typography';
-import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { firebaseAuth } from "../firebase";
-import {createUserWithEmailAndPassword} from "firebase/auth"
+import {createUserWithEmailAndPassword, sendEmailVerification} from "firebase/auth"
 
 function Copyright(props) {
   return (
@@ -31,21 +22,33 @@ function Copyright(props) {
 const theme = createTheme();
 
 export default function SignUp({handler}) {
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    console.log({
-      email: data.get('email'),
-      password: data.get('password'),
-    });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
+  function handleSubmit(event){
+    event.preventDefault();
+    //get the form data
+    const data = new FormData(event.currentTarget);
+    setLoading(true)
+    //check password and confirm password match
+    if(data.get('password') !== data.get('confirmPassword')){
+      setError('Password and confirm password do not match.')
+      setLoading(false)
+      return
+    }
     //firebase signup method
     createUserWithEmailAndPassword(firebaseAuth, data.get('email'), data.get('password'))
     .then(userCredential => {
-        console.log(userCredential.user)
+        //created new user, send verification email
+        sendEmailVerification(firebaseAuth.currentUser)
+        .then(() => {
+          // Email verification sent!, you can do something here if you need to
+          // ...
+        });
     })
     .catch(error => {
-      console.log(error.message)
+      setError(error.message)
+      setLoading(false)
     })
 
   };
@@ -92,10 +95,18 @@ export default function SignUp({handler}) {
                 />
               </Grid>
               <Grid item xs={12}>
-                <FormControlLabel
-                  control={<Checkbox value="allowExtraEmails" color="primary" />}
-                  label="I want to receive inspiration, marketing promotions and updates via email."
+                <TextField
+                  required
+                  fullWidth
+                  name="confirmPassword"
+                  label="Confirm Password"
+                  type="password"
+                  id="confirmPassword"
+                  autoComplete="new-password"
                 />
+              </Grid>
+              <Grid item xs={12}>
+                {error ? <Alert severity="error">{error}</Alert> : <></>}
               </Grid>
             </Grid>
             <Button
@@ -115,7 +126,13 @@ export default function SignUp({handler}) {
             </Grid>
           </Box>
         </Box>
-        <Copyright sx={{ mt: 5 }} />
+        <Backdrop
+        sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
+        open={loading}
+        >
+        <CircularProgress color="inherit" />
+        </Backdrop>
+        <Copyright sx={{ mt: 8, mb: 4 }} />
       </Container>
     </ThemeProvider>
   );
